@@ -1,0 +1,9 @@
+{
+  "name": "test_task_2",
+  "description" : "test description!",
+  "start": "<div>\n<p>test!</p>\n</div>",
+  "answers": [
+    "hello world"
+  ],
+  "final": "<div>\n<p>hello world</p>\n</div>"
+}
