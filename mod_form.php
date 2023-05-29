@@ -48,6 +48,7 @@ class mod_htmleditor_mod_form extends moodleform_mod {
                 border: 1px solid lightgrey;
                 padding-top: 15px;
                 padding-left: 15px;
+                padding-right: 15px;
                 margin-bottom: 15px;
             }
             .sub_rule_group{
@@ -81,26 +82,50 @@ class mod_htmleditor_mod_form extends moodleform_mod {
             return $child_ids != null ? explode(' ', $rules_all[$rule_id]->child_id) : array();
         }
         $values_to_form = array();
+
         function addRule($rule_id, MoodleQuickForm $mform, $rules_all, $i = 0, $sub = false) {
             $values_to_form = array();
-            $rule_name = 'rule_text-'.$rule_id;
+            $rule_text_name = 'rule_text-'.$rule_id;
+            $rule_name = 'rule_name-'.$rule_id;
             $select_name = 'select-'.$rule_id;
 
-            $mform->addElement('text', $rule_name, $sub ? get_string('sub_rule', 'htmleditor') : get_string('rule', 'htmleditor').' '.($i+1), array('size'=>'64'));
-//            $mform->setType($rule_name, PARAM_TEXT);
-            $mform->addRule($rule_name, 'fill it', 'required');
+            $mform->addElement(
+                'text', 
+                $rule_name, 
+                get_string($sub?'sub_rule':'rule', 'htmleditor').' '.($i+1),
+                array('size'=>'64') 
+            );
+            $mform->addRule($rule_name, '', 'required');
+
+            $mform->addElement(
+                'text', 
+                $rule_text_name, 
+                get_string('rule_value', 'htmleditor'), 
+                array('size'=>'64')
+            );
+            $mform->addRule($rule_text_name, '', 'required');
+
+            $rule_descriontion_name = 'rule_description-'.$rule_id;
+            $mform->addElement(
+                'textarea', 
+                $rule_descriontion_name, 
+                get_string('rule_description', 'mod_htmleditor'), 
+                'wrap="soft" rows="10"'
+            );
+            $mform->addRule($rule_descriontion_name, '', 'required');
+
 
             $text_to_text = $rules_all[$rule_id]->rule_text;
             $type_to_type = $rules_all[$rule_id]->rule_type;
 
-            if (isset($_POST[$rule_name])) $text_to_text = $_POST[$rule_name];
+            if (isset($_POST[$rule_text_name])) $text_to_text = $_POST[$rule_text_name];
             if (isset($_POST['add_delete_buttons_group'][$select_name])) $type_to_type = $_POST['add_delete_buttons_group'][$select_name];
 
-            if (isset($_GET[$rule_name])) $text_to_text = $_GET[$rule_name];
+            if (isset($_GET[$rule_text_name])) $text_to_text = $_GET[$rule_text_name];
             if (isset($_GET[$select_name])) $type_to_type = $_GET[$select_name];
 
             if ($text_to_text != '')
-                $values_to_form[$rule_name] = $text_to_text;
+                $values_to_form[$rule_text_name] = $text_to_text;
             if ($type_to_type != '')
                 $values_to_form[$select_name] = $type_to_type;
 
