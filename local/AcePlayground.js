@@ -1,9 +1,28 @@
+'use strict';
+
 let activity_button;
 let appended = false;
+const DEBUG = true;
+
+function dbm(values, type) {
+    if (!DEBUG) return;
+
+    switch (type) {
+    case 'err':
+        console.error(...values);
+    case 'warn':
+        console.warn(...values);
+        break;
+    default:
+        console.log(...values);
+        break;
+    }
+}
 
 function openModal() {
     let myModal = document.getElementById("myModal")
     myModal.style.display = "block";
+
     if (!appended) {
         console.log(activity_button);
         document.querySelector('.modal-content').appendChild(activity_button)
@@ -11,7 +30,7 @@ function openModal() {
     };
 }
   
-  function closeModal() {
+function closeModal() {
     document.getElementById("myModal").style.display = "none";
 }
   
@@ -19,36 +38,36 @@ function openModal() {
 
 function getDescription(rule, is_valid) {
         
-    console.log('rule in ds', rule.rule.rule_text);
+    dbm(['rule in ds', rule.rule.rule_text]);
+
     let name = rule?.name ?? rule?.rule.rule_text ?? 'rule text';
     let description = rule?.description ?? 'rule description';
-    // let style = is_valid ? 'style="background: #d3f2e0"' : '';
     let style = is_valid ? "background: #d3f2e0" : '';
 
     let h3 = document.createElement('h3');
     h3.textContent += name;
+
     let p = document.createElement('p');
     p.textContent += description;
+
     let out = document.createElement('div')
     out.appendChild(h3);
     out.appendChild(p);
     out.setAttribute('style', style);
+
     let temp = document.createElement('div');
     temp.appendChild(out);
 
     return temp.innerHTML;
-
-    // return `<div ${style}><h3>\\${name}</h3><p>${description}</p><br></div>`;
-
 }
 
 function unpackFromBody(dom, index = 0) {
     if (dom.nodeName === 'BODY') {
-        // console.log('dom name is', dom.nodeName);
+        dbm(['dom name is', dom.nodeName])
         return dom.childNodes[index];
     }
     if (dom.querySelector('body') == null) {
-        // console.warn('unpack error! cant find body in', dom);
+        dbm(['unpack error! cant find body in', dom], 'warn');
         return dom;
     }
     return dom.querySelector('body').childNodes[index];
@@ -56,16 +75,16 @@ function unpackFromBody(dom, index = 0) {
 
 function prepareToQuerySelector(rule_dom) {
     let result = '';
-    //console.log('rule_dom', rule_dom);
     let attributes = rule_dom.attributes;
-    //console.log('attributes', attributes);
+    dbm(['attributes', attributes]);
     result += rule_dom.nodeName;
-    //console.log('node name', rule_dom.nodeName);
-    if (attributes != undefined) {
-        for (let attribute of attributes) {
-            result += `[${attribute.name}="${attribute.value}"]`
-        }  
-    }
+    dbm(['node name', rule_dom.nodeName]);
+
+    if (attributes == undefined) 
+        return result;
+
+    for (let attribute of attributes) 
+        result += `[${attribute.name}="${attribute.value}"]`
 
     return result;
 }
@@ -86,17 +105,17 @@ function prepareToCheck(htmlValue, rule_object, from = 'body') {
         dom_for_from = parser.parseFromString(from.rule.rule_text, 'text/html');
         dom_for_from = unpackFromBody(dom_for_from);
 
-        // console.log('from dom', dom_for_from);
+        dbm(['from dom', dom_for_from])
         preparedString = prepareToQuerySelector(dom_for_from);
-        // console.log('prepared string:', preparedString);
+        dbm(['prepared string:', preparedString])
 
         check_from_here = htmlValue_dom.querySelector(preparedString);
-        check_from_here = unpackFromBody(check_from_here);
+        if (check_from_here !== null) check_from_here = unpackFromBody(check_from_here);
     
     }
 
     if (check_from_here == null && from !== 'body') {
-        //console.warn('check point is missing! going check from body!');
+        dbm(['check point is missing! going check from body!'], 'warn')
         check_from_here = htmlValue_dom.querySelector('body');
     }
 
@@ -109,31 +128,31 @@ function prepareToCheck(htmlValue, rule_object, from = 'body') {
 function check(htmlValue, rule_object, check_type, from = 'body') {
     let valid = true;
     let valid_check_types = ['exist', 'delete'];
-    // console.warn('check from value', from);
+    dbm(['check from value', from], 'warn');
+    dbm(['rule_object', rule_object], 'warn');
 
     let [check_from_here, rule_dom] = prepareToCheck(htmlValue, rule_object, from);
-    // console.log(check_from_here, rule_dom);
 
     if (!(valid_check_types.includes(check_type))) 
     {
-        console.warn('Invalid check type', check_type,' This rule will be skipped!');
+        dbm(['Invalid check type', check_type,' This rule will be skipped!'], 'warn');
         return true;
     }
 
-    //console.log('check', check_type, 'for', rule_object, 'from', check_from_here);
+    dbm(['check', check_type, 'for', rule_object, 'from', check_from_here])
 
     let finded = false;
     check_from_here.childNodes.forEach(child => {
-        //console.warn('compare',child,'and',rule_dom);
+        dbm(['compare',child,'and',rule_dom], 'warn');
 
         if (rule_dom.nodeName !== "#text" || child.nodeName !== '#text') {
-            //console.warn(child.isEqualNode(rule_dom) ? 'equale!' : 'fail!');
+            dbm([child.isEqualNode(rule_dom) ? 'equale!' : 'fail!'], 'warn');
             finded ||= child.isEqualNode(rule_dom);
         } else {
                 
             let rule_text = rule_dom.nodeValue.trim();
             let child_text = child.nodeValue.trim();
-            //console.warn(child_text == rule_text ? 'equale!' : 'fail!');
+            dbm([child_text == rule_text ? 'equale!' : 'fail!'], 'warn');
             finded ||= child_text == rule_text;
         }
          
@@ -141,7 +160,7 @@ function check(htmlValue, rule_object, check_type, from = 'body') {
 
     valid &= check_type === 'exist' ? finded : !finded;
 
-    //console.warn('check complete! result', Boolean(valid));
+    dbm(['check complete! result', Boolean(valid)], 'warn');
 
     return valid;
 }
@@ -153,14 +172,12 @@ function validRule(htmlValue, rule_object, from = 'body') {
 
     if (rule_object.childs == null) {
         valid &= check(htmlValue, rule_object, rule_object.rule.rule_type, from);
-        //console.warn('valid', Boolean(valid));
         return valid;
     }
 
     rule_object.childs.forEach(child => {
         if (rule_object.rule.rule_type == 'delete' && child.rule.rule_type == 'exist') valid &= true;
         else valid &= validRule(htmlValue, child , rule_object);
-        //console.warn('valid', Boolean(valid));
         
     });
     return valid;
@@ -172,18 +189,16 @@ function analyze(htmlValue, cssValue, rules_unparsed, description) {
     
     try {rules = JSON.parse(rules_unparsed);} 
     catch (e) {
-        //console.error(e, 'rules:', rules_unparsed);
-        
+        dbm([e, 'rule:', rules_unparsed], 'err');
     }
-    //console.warn(rules);
 
     let description_text = '';
     let all_valid = true;
 
     rules.forEach(rule => {
-        // console.log('rule', rule);
+        dbm(['analyze rule', rule]);
         let is_valid = validRule(htmlValue, rule);
-        //console.warn('rule is valid', Boolean(is_valid));
+        dbm(['rule is valid:', Boolean(is_valid)], 'warn');
         all_valid &= is_valid;
         description_text += getDescription(rule, is_valid)
     })
