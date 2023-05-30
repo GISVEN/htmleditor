@@ -29,9 +29,9 @@ function htmleditor_update_instance($htmleditor) {
         }
 
         if (str_contains($key, "rule_description-")) {
-            $rule_descriontion = $vars[$key];
+            $rule_description = $vars[$key];
             $key_exploded = explode('-', $key);
-            $rules[$key_exploded[1]]['description'] = $rule_descriontion;
+            $rules[$key_exploded[1]]['description'] = $rule_description;
         }
 
         if ($key == 'add_delete_buttons_group') {
