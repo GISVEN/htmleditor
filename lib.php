@@ -15,11 +15,25 @@ function htmleditor_update_instance($htmleditor) {
     $vars_keys = array_keys($vars);
     $rules = array();
     foreach ($vars_keys as $key) {
+
         if (str_contains($key, "rule_text-")) {
             $rule_text = $vars[$key];
             $key_exploded = explode('-', $key);
             $rules[$key_exploded[1]]['text'] = $rule_text;
         }
+
+        if (str_contains($key, "rule_name-")) {
+            $rule_name = $vars[$key];
+            $key_exploded = explode('-', $key);
+            $rules[$key_exploded[1]]['name'] = $rule_name;
+        }
+
+        if (str_contains($key, "rule_description-")) {
+            $rule_descriontion = $vars[$key];
+            $key_exploded = explode('-', $key);
+            $rules[$key_exploded[1]]['description'] = $rule_descriontion;
+        }
+
         if ($key == 'add_delete_buttons_group') {
             $group_array = $vars[$key];
             foreach (array_keys($group_array) as $group_array_key) {
@@ -33,9 +47,36 @@ function htmleditor_update_instance($htmleditor) {
     }
 
     $rules_keys = array_keys($rules);
-    foreach ($rules_keys as $key) {
-        $DB->set_field('htmleditor_rules', 'rule_text', $rules[$key]['text'], array('id'=>$key));
-        $DB->set_field('htmleditor_rules', 'rule_type', $rules[$key]['type'] ?? 'exist', array('id'=>$key));
+
+    foreach ($rules_keys as $key) 
+    {
+        $DB->set_field(
+            'htmleditor_rules', 
+            'rule_text', 
+            $rules[$key]['text'], 
+            ['id'=>$key]
+        );
+
+        $DB->set_field(
+            'htmleditor_rules', 
+            'rule_type', 
+            $rules[$key]['type'] ?? 'exist', 
+            ['id'=>$key]
+        );
+
+        $DB->set_field(
+            'htmleditor_rules', 
+            'name', 
+            $rules[$key]['name'], 
+            ['id'=>$key]
+        );
+
+        $DB->set_field(
+            'htmleditor_rules', 
+            'description', 
+            $rules[$key]['description'], 
+            ['id'=>$key]
+        );
     }
 
     return $DB->update_record("htmleditor", $htmleditor);
