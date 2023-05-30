@@ -105,30 +105,40 @@ class mod_htmleditor_mod_form extends moodleform_mod {
             );
             $mform->addRule($rule_text_name, '', 'required');
 
-            $rule_descriontion_name = 'rule_description-'.$rule_id;
+            $rule_description_name = 'rule_description-'.$rule_id;
             $mform->addElement(
                 'textarea', 
-                $rule_descriontion_name, 
+                $rule_description_name,
                 get_string('rule_description', 'mod_htmleditor'), 
                 'wrap="soft" rows="10"'
             );
-            $mform->addRule($rule_descriontion_name, '', 'required');
+            $mform->addRule($rule_description_name, '', 'required');
 
 
             $text_to_text = $rules_all[$rule_id]->rule_text;
             $type_to_type = $rules_all[$rule_id]->rule_type;
+            $name_to_name = $rules_all[$rule_id]->name;
+            $desc_to_desc = $rules_all[$rule_id]->description;
 
             if (isset($_POST[$rule_text_name])) $text_to_text = $_POST[$rule_text_name];
             if (isset($_POST['add_delete_buttons_group'][$select_name])) $type_to_type = $_POST['add_delete_buttons_group'][$select_name];
+            if (isset($_POST[$rule_name])) $name_to_name = $_POST[$rule_name];
+            if (isset($_POST[$rule_description_name])) $desc_to_desc = $_POST[$rule_description_name];
 
             if (isset($_GET[$rule_text_name])) $text_to_text = $_GET[$rule_text_name];
             if (isset($_GET[$select_name])) $type_to_type = $_GET[$select_name];
+            if (isset($_GET[$rule_name])) $name_to_name = $_GET[$rule_name];
+            if (isset($_GET[$rule_description_name])) $desc_to_desc = $_GET[$rule_description_name];
+
 
             if ($text_to_text != '')
                 $values_to_form[$rule_text_name] = $text_to_text;
             if ($type_to_type != '')
                 $values_to_form[$select_name] = $type_to_type;
-
+            if ($name_to_name != '')
+                $values_to_form[$rule_name] = $name_to_name;
+            if ($desc_to_desc != '')
+                $values_to_form[$rule_description_name] = $desc_to_desc;
 
 
             $add_delete_buttons_array = array();
