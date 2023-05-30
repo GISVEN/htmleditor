@@ -38,17 +38,20 @@ function closeModal() {
 
 function getDescription(rule, is_valid) {
         
-    dbm(['rule in ds', rule.rule.rule_text]);
+    dbm(['full rule in ds', rule]);
 
-    let name = rule?.name ?? rule?.rule.rule_text ?? 'rule text';
-    let description = rule?.description ?? 'rule description';
-    let style = is_valid ? "background: #d3f2e0" : '';
+    let name = rule.rule?.name ?? 'rule text';
+    let description = rule.rule?.description ?? 'rule description';
+    let style = is_valid ? "background: #d3f2e0; padding: 5px" : 'padding: 5px';
+    let element_style = 'margin-top: 0';
 
     let h3 = document.createElement('h3');
     h3.textContent += name;
+    h3.setAttribute('style', element_style);
 
     let p = document.createElement('p');
     p.textContent += description;
+    p.setAttribute('style', element_style);
 
     let out = document.createElement('div')
     out.appendChild(h3);
@@ -203,7 +206,7 @@ function analyze(htmlValue, cssValue, rules_unparsed, description) {
         description_text += getDescription(rule, is_valid)
     })
 
-    description.src = "data:text/html," + encodeURIComponent(description_text);
+    description.src = "data:text/html;charset=UTF-8," + encodeURIComponent(description_text);
     return all_valid;
 }
 
