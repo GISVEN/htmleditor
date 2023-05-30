@@ -88,14 +88,18 @@ class mod_htmleditor_mod_form extends moodleform_mod {
             $rule_text_name = 'rule_text-'.$rule_id;
             $rule_name = 'rule_name-'.$rule_id;
             $select_name = 'select-'.$rule_id;
+            $is_root = $rules_all[$rule_id]->root == 1;
 
-            $mform->addElement(
-                'text', 
-                $rule_name, 
-                get_string($sub?'sub_rule':'rule', 'htmleditor').' '.($i+1),
-                array('size'=>'64') 
-            );
-            $mform->addRule($rule_name, '', 'required');
+            if ($is_root) {
+                $mform->addElement(
+                    'text',
+                    $rule_name,
+                    get_string($sub?'sub_rule':'rule', 'htmleditor').' '.($i+1),
+                    array('size'=>'64')
+                );
+                $mform->addRule($rule_name, '', 'required');
+            }
+
 
             $mform->addElement(
                 'text', 
@@ -105,14 +109,17 @@ class mod_htmleditor_mod_form extends moodleform_mod {
             );
             $mform->addRule($rule_text_name, '', 'required');
 
-            $rule_description_name = 'rule_description-'.$rule_id;
-            $mform->addElement(
-                'textarea', 
-                $rule_description_name,
-                get_string('rule_description', 'mod_htmleditor'), 
-                'wrap="soft" rows="10"'
-            );
-            $mform->addRule($rule_description_name, '', 'required');
+            if ($is_root) {
+                $rule_description_name = 'rule_description-'.$rule_id;
+                $mform->addElement(
+                    'textarea',
+                    $rule_description_name,
+                    get_string('rule_description', 'mod_htmleditor'),
+                    'wrap="soft" rows="10"'
+                );
+                $mform->addRule($rule_description_name, '', 'required');
+            }
+
 
 
             $text_to_text = $rules_all[$rule_id]->rule_text;
