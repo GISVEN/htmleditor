@@ -222,7 +222,14 @@ class mod_htmleditor_mod_form extends moodleform_mod {
                 // получаем строку с ид правил
                 $rules_ids_string = $instance->rules;
 
-                $rule_id = $DB->insert_record('htmleditor_rules', array('rule_text'=>'<div></div>', 'rule_type'=>'exist'));
+                $rule_id = $DB->insert_record(
+                    'htmleditor_rules',
+                    [
+                        'rule_text'=>'<div></div>',
+                        'rule_type'=>'exist',
+                        'root' => 1
+                    ]
+                );
                 if (strlen($rules_ids_string) > 0) {
                     $rules_ids_string .= ' ';
                 }
