@@ -257,7 +257,7 @@ function getDomWithChilds(rule_object) {
 // функция по поиску правила на parent dom
 function tryFindRule(rule_object, parent_dom) {
     let valid = false;
-
+    let check_exist = rule_object.rule.rule_type === 'exist';
     dbm(['trying find rule', rule_object.rule.rule_text, 'at', parent_dom], 'warn');
 
     let rule_dom = stringToDom(rule_object.rule?.rule_text);
@@ -279,12 +279,17 @@ function tryFindRule(rule_object, parent_dom) {
             // dbm(['child dom', child_dom], 'warn');
             let child_string = prepareToQuerySelector(child_dom);
             dbm(['compare strings', rule_dom_string, 'and', child_string , rule_dom_string === child_string], 'warn')
-            valid |= rule_dom_string === child_string;
+            let find = rule_dom_string === child_string;
+            valid |= check_exist ? find : !find;
             // dbm(['is valid', valid]);
             if (rule_dom_string === child_string) finded = child;
 
         })
     } 
+    if (parent_dom_childs.length == 0) {
+        dbm(['parent childs is empty!']);
+        if (!check_exist) valid = true;
+    }
 
     dbm(['rule is finded', valid], 'warn');
 
@@ -302,6 +307,7 @@ function tryFindRule(rule_object, parent_dom) {
     return valid;
 }
 
+// функция проверяет правило на валидность
 function validRule(htmlValue, rule_object) {
     
     let valid = true;
@@ -310,7 +316,8 @@ function validRule(htmlValue, rule_object) {
     let head = htmlValue_dom.querySelector('head');
 
     // новый обработчик
-
+    let rule_type = rule_object.rule.rule.rule_type;
+    dbm(['rule type', rule_type], 'err');
 
     if (rule_object.parent !== null) {
         let parent_dom = tryFindParent(htmlValue, rule_object.parent);
