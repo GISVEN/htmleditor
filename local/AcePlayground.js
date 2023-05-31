@@ -509,7 +509,7 @@ class AcePlayground extends HTMLElement {
                     ],
                 ["style", `
                     #host {
-                        height: 95%;
+                        height: 150%;
                         display: grid;
                         grid-template-areas: "redactors info";
                         grid-template-columns: 50% 50%;
@@ -521,7 +521,7 @@ class AcePlayground extends HTMLElement {
                     #info {
                         display: grid;
                         grid-template-areas: "preview" "description";
-                        grid-template-rows: 60% 40%;
+                        grid-template-rows: 65% 35%;
                         width: 100%;
                     }
                     #preview {
