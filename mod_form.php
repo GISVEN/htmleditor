@@ -20,9 +20,6 @@ class mod_htmleditor_mod_form extends moodleform_mod {
         $mform->setType('from', PARAM_TEXT);
 
 
-        $_POST;
-        $_GET;
-
 
         // получает запись из htmteditor таблицы
         $instance = $DB->get_record('htmleditor', array("id"=>$id));
@@ -57,6 +54,14 @@ class mod_htmleditor_mod_form extends moodleform_mod {
                 padding-left: 30px;
                 border: 1px lightgrey dotted;
             }
+            footer {
+                display: none;
+            }
+            
+            .notifytiny.debuggingmessage{
+                display: none;
+            }
+
         </style>');
 
         // поле ввода имени задания

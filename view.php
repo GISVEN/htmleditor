@@ -9,6 +9,14 @@ require_once("./locallib.php");
 
 global $PAGE;
 
+echo "<style>.notifytiny.debuggingmessage{
+display: none;
+}</style>";
+
+// $CFG->cachejs = false;
+$CFG->debug = 32767;  
+$CFG->debugdisplay = true;
+
 $id   = optional_param("id", 0, PARAM_INT);
 $name = optional_param("name", "default", PARAM_TEXT);
 $placeholde = optional_param('placeholder', "placeholder", PARAM_TEXT);
@@ -33,16 +41,21 @@ echo $OUTPUT->header();
 
 $context = context_module::instance($cm->id);
 
+
 $PAGE->requires->js( new moodle_url( "/mod/htmleditor/local/ace-builds-master/src/ace.js"));
 $PAGE->requires->js( new moodle_url( "/mod/htmleditor/local/AcePlayground.js"));
-$PAGE->requires->js_call_amd("init");
+
+// echo "<script src='./local/ace-builds-master/src/ace.js'></script>";
+// echo "<script src='./local/AcePlayground.js'></script>";
 
 
 echo "
 <style>
 footer {
-    display: flex;
+    display: none;
 }
+
+
 
 #topofscroll {
     overflow: visible;
@@ -137,6 +150,12 @@ $rules_json = getRules($htmleditor->id);
 $rules_json = str_replace("'", "&#39", $rules_json);
 $placeholder_replaced = str_replace("'", "&#39", $htmleditor->placeholder);
 //var_dump($rules_json);
+
+
+$PAGE->requires->js_call_amd("init");
+
 echo "<ace-playground html='{$placeholder_replaced}' rules='{$rules_json}'></ace-playground>";
+
+
 
 echo $OUTPUT->footer();
