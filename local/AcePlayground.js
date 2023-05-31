@@ -10,6 +10,7 @@ function dbm(values, type) {
     switch (type) {
     case 'err':
         console.error(...values);
+        break;
     case 'warn':
         console.warn(...values);
         break;
@@ -24,7 +25,7 @@ function openModal() {
     myModal.style.display = "block";
 
     if (!appended) {
-        console.log(activity_button);
+        // console.log(activity_button);
         document.querySelector('.modal-content').appendChild(activity_button)
         appended = true;
     };
@@ -34,14 +35,11 @@ function closeModal() {
     document.getElementById("myModal").style.display = "none";
 }
   
-
-
-function getDescription(rule, is_valid) {
+function getDescription(rule_object, is_valid) {
         
-    dbm(['full rule in ds', rule]);
-
-    let name = rule.rule?.name ?? 'rule text';
-    let description = rule.rule?.description ?? 'rule description';
+    let rule = rule_object.rule.rule;
+    let name = rule?.name ?? 'rule name';
+    let description = rule?.description ?? 'rule description';
     let style = is_valid ? "background: #d3f2e0; padding: 5px" : 'padding: 5px';
     let element_style = 'margin-top: 0';
 
@@ -76,12 +74,36 @@ function unpackFromBody(dom, index = 0) {
     return dom.querySelector('body').childNodes[index];
 }
 
+function isDomElement(obj) {
+    try {
+      //Using W3 DOM2 (works for FF, Opera and Chrome)
+      return obj instanceof HTMLElement;
+    }
+    catch(e){
+      //Browsers not supporting W3 DOM2 don't have HTMLElement and
+      //an exception is thrown and we end up here. Testing some
+      //properties that all elements have (works on IE7)
+      return (typeof obj==="object") &&
+        (obj.nodeType===1) && (typeof obj.style === "object") &&
+        (typeof obj.ownerDocument ==="object");
+    }
+  }
+
 function prepareToQuerySelector(rule_dom) {
+    if (!isDomElement(rule_dom) && rule_dom.nodeType === null) {
+        dbm(["rule dom is not a DOM", rule_dom], 'err');
+        return '';
+    }
     let result = '';
     let attributes = rule_dom.attributes;
-    dbm(['attributes', attributes]);
+    // dbm(['attributes', attributes]);
     result += rule_dom.nodeName;
-    dbm(['node name', rule_dom.nodeName]);
+    
+   dbm(['node', rule_dom]);
+
+    if (rule_dom.nodeName === '#text') {
+        return result += '-' + rule_dom.nodeValue.trim().replace(/\n/g, '');;
+    }
 
     if (attributes == undefined) 
         return result;
@@ -169,21 +191,211 @@ function check(htmlValue, rule_object, check_type, from = 'body') {
 }
 
 
-function validRule(htmlValue, rule_object, from = 'body') {
-    
-    let valid = true;
+function isIterable(obj) {
+    // checks for null and undefined
+    if (obj == null) {
+      return false;
+    }
+    return typeof obj[Symbol.iterator] === 'function';
+  }
 
-    if (rule_object.childs == null) {
-        valid &= check(htmlValue, rule_object, rule_object.rule.rule_type, from);
-        return valid;
+
+// функция по преобразованию строки в dom
+function stringToDom(string) {
+    let parser = new DOMParser();
+    return parser.parseFromString(string, 'text/html');
+}
+
+// функция по поиску родителя для правила
+function tryFindParent(htmlValue, parent) {
+
+    if (htmlValue == null) {
+        dbm(["Nowhere to look"], 'err');
+        return false;
     }
 
-    rule_object.childs.forEach(child => {
-        if (rule_object.rule.rule_type == 'delete' && child.rule.rule_type == 'exist') valid &= true;
-        else valid &= validRule(htmlValue, child , rule_object);
-        
-    });
+    let htmlValue_dom = stringToDom(htmlValue);
+    // dbm(['html dom', htmlValue_dom], 'warn');
+
+    if (parent === null) return false;
+
+
+    let parent_dom = stringToDom(parent.rule.rule_text);
+    parent_dom = unpackFromBody(parent_dom);
+    // dbm(['parent dom 1', parent_dom], 'warn');
+
+    if (!parent_dom) {return false};
+
+    let prepared_string = prepareToQuerySelector(parent_dom);
+    // dbm(['prepared string', prepared_string], 'warn');
+
+    let selected = htmlValue_dom.querySelector(prepared_string);
+    // dbm(['selected', selected], 'warn');
+
+    return selected ? selected : false;
+}
+
+function getDomWithChilds(rule_object) {
+    let result = stringToDom(rule_object.rule.rule_text);
+    result = unpackFromBody(result);
+    let childs = [];
+
+    if (isIterable(rule_object.rule.childs)) {
+        rule_object.rule.childs.forEach(child => {
+            childs.push(...getDomWithChilds(child));
+        })
+    }
+    if (isIterable(childs)) {
+        childs.forEach(child => {
+            result.appendChild(child);
+        })
+    }
+
+    return result;
+}
+
+// функция по поиску правила на parent dom
+function tryFindRule(rule_object, parent_dom) {
+    let valid = false;
+
+    dbm(['trying find rule', rule_object.rule.rule_text, 'at', parent_dom], 'warn');
+
+    let rule_dom = stringToDom(rule_object.rule?.rule_text);
+    rule_dom = unpackFromBody(rule_dom);
+
+    let rule_dom_string = prepareToQuerySelector(rule_dom);
+
+    let parent_dom_childs = parent_dom.childNodes;
+    // dbm(["parent dom childs", parent_dom_childs]);
+
+    let finded= null;
+
+    if (isIterable(parent_dom_childs)) {
+        parent_dom_childs.forEach(child => {
+            let child_dom = child;
+            if (typeof child === 'string') {
+                child_dom = document.createTextNode(child);
+            }
+            // dbm(['child dom', child_dom], 'warn');
+            let child_string = prepareToQuerySelector(child_dom);
+            dbm(['compare strings', rule_dom_string, 'and', child_string , rule_dom_string === child_string], 'warn')
+            valid |= rule_dom_string === child_string;
+            // dbm(['is valid', valid]);
+            if (rule_dom_string === child_string) finded = child;
+
+        })
+    } 
+
+    dbm(['rule is finded', valid], 'warn');
+
+    dbm(['start finding childs for', rule_object]);
+    let valid_childs = true;
+    if (valid) {
+        rule_object.childs?.forEach(rule_child => {
+            valid_childs &= tryFindRule(rule_child, finded);
+        });
+    }
+    dbm(['valid childs', valid_childs]);
+    valid &= valid_childs;
+
+
     return valid;
+}
+
+function validRule(htmlValue, rule_object) {
+    
+    let valid = true;
+    let htmlValue_dom = stringToDom(htmlValue);
+    let body = htmlValue_dom.querySelector('body');
+    let head = htmlValue_dom.querySelector('head');
+
+    // новый обработчик
+
+
+    if (rule_object.parent !== null) {
+        let parent_dom = tryFindParent(htmlValue, rule_object.parent);
+        if (parent_dom === false) return false;
+        
+        dbm(['parent dom', parent_dom], 'warn');
+        dbm(['parent string', prepareToQuerySelector(parent_dom)], 'warn');
+
+        valid &= tryFindRule(rule_object.rule, parent_dom);
+
+
+    } else {
+        valid &= tryFindRule(rule_object.rule, body);
+        dbm(['first valid', valid]);
+        if (!valid) valid &= tryFindRule(rule_object.rule, head);
+        dbm(['second valid', valid]);
+        if (!valid) valid &= tryFindRule(rule_object.rule, htmlValue_dom);
+        dbm(['fin valid', valid]);
+    }
+    // старый обработчик
+    // if (rule_object.childs == null) {
+    //     valid &= check(htmlValue, rule_object, rule_object.rule.rule_type, from);
+    //     return valid;
+    // }
+
+    // rule_object.childs.forEach(child => {
+    //     if (rule_object.rule.rule_type == 'delete' && child.rule.rule_type == 'exist') valid &= true;
+    //     else valid &= validRule(htmlValue, child , rule_object);
+        
+    // });
+    return valid;
+}
+
+
+// вспомогательная функция к prepareRules
+function prepareRule(rule_object, parent = null) {
+    let prepared_rules = [];
+
+    // dbm(['preparing rule', rule_object], 'warn');
+
+    prepared_rules.push({
+        'parent': parent,
+        'rule': rule_object
+    });
+
+
+    let rule_childs = rule_object.childs
+    // dbm(['rule childs', rule_childs], 'warn');
+
+    if (rule_childs == null) return prepared_rules;
+
+    for (let i = 0; i < rule_childs.length; i++) {
+        let child = rule_childs[i];
+
+        // dbm(['child', child], 'warm');
+        // dbm(['rule c', rule_childs], 'warn');
+        // dbm(['index', i]);
+
+        if (child.rule.root == 1)
+            prepared_rules.push(...prepareRule(child, rule_object))
+
+    }
+
+    // dbm(['prepared rules', prepared_rules], 'warn');
+
+    prepared_rules.forEach(rule => {
+        // dbm(['rule to delete', rule.rule, 'from', rule_object.childs]);
+        let index = rule_object.childs?.indexOf(rule.rule);
+        if (index !== -1) rule_object.childs?.splice(index, 1);
+    });
+    
+
+    return prepared_rules;
+}   
+
+// функция для разбивания правил по root атрибуту
+function prepareRules(rules) {
+
+    let prepared_rules = [];
+
+    rules.forEach(rule_object => {
+        prepared_rules.push(...prepareRule(rule_object));
+    })
+
+    return prepared_rules;    
 }
 
 
@@ -198,19 +410,33 @@ function analyze(htmlValue, cssValue, rules_unparsed, description) {
     let description_text = '';
     let all_valid = true;
 
-    rules.forEach(rule => {
-        dbm(['analyze rule', rule]);
-        let is_valid = validRule(htmlValue, rule);
+    // новая обработка
+    let prepared_rules = prepareRules(rules);
+    dbm([prepared_rules]);
+
+    prepared_rules.forEach(prepared_rule => {
+        dbm(['analyze rule', prepared_rule]);
+        let is_valid = validRule(htmlValue, prepared_rule);
         dbm(['rule is valid:', Boolean(is_valid)], 'warn');
         all_valid &= is_valid;
-        description_text += getDescription(rule, is_valid)
+        description_text += getDescription(prepared_rule, is_valid);
     })
+
+    // старая обработка
+    // rules.forEach(rule => {
+    //     dbm(['analyze rule', rule]);
+    //     let is_valid = validRule(htmlValue, rule);
+    //     dbm(['rule is valid:', Boolean(is_valid)], 'warn');
+    //     all_valid &= is_valid;
+    //     description_text += getDescription(rule, is_valid)
+    // })
 
     description.src = "data:text/html;charset=UTF-8," + encodeURIComponent(description_text);
     return all_valid;
 }
 
 let updatePreviewTimeout = undefined;
+
 
 class AcePlayground extends HTMLElement {
     rules = null;
@@ -413,10 +639,12 @@ class AcePlayground extends HTMLElement {
     }
 };
 
-define("init", function() {
-    customElements.define('ace-playground', AcePlayground);
-    // console.log("ace-playground defined!");
-}
+define(
+    "init", 
+    function() {
+        customElements.define('ace-playground', AcePlayground);
+        // console.log("ace-playground defined!");
+    }
 )
 
 
