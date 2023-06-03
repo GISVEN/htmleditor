@@ -87,8 +87,6 @@ function htmleditor_update_instance($htmleditor) {
 function htmleditor_delete_instance( $id ) {
     global $DB, $CFG;
 
-
-
     $instance = $DB->get_record('htmleditor', array("id"=>$id));
     if ($instance === false) {
         return false;
@@ -102,7 +100,6 @@ function htmleditor_delete_instance( $id ) {
     }
 
     $DB->delete_records('htmleditor', array("id"=>$id));
-
 }
 
 function htmleditor_supports($features) {
