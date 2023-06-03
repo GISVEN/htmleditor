@@ -20,4 +20,4 @@ $string['delete_type'] = 'отсутствие';
 $string['rule_value'] = 'Текст правила';
 $string['set_as_root'] = 'Сделать отображаемым';
 $string['set_as_not_root'] = 'Сделать скрытым';
-
+$string['rule_description'] = 'Описание';

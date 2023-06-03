@@ -20,3 +20,4 @@ $string['delete_type'] = 'not exist';
 $string['rule_value'] = 'Rule value';
 $string['set_as_root'] = 'Show stage';
 $string['set_as_not_root'] = 'Hide stage';
+$string['rule_description'] = 'Description';
