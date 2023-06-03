@@ -570,7 +570,7 @@ class AcePlayground extends HTMLElement {
         let cssEditor = ace.edit(shadow.querySelector("#css"), {
             theme: "ace/theme/github",
             mode: "ace/mode/css",
-            value: css || "*{color:red}",
+            value: css || "",
             autoScrollEditorIntoView: true
         });
 
@@ -593,25 +593,7 @@ class AcePlayground extends HTMLElement {
             this.preview.src = "data:text/html," + encodeURIComponent(code);
 
             let result = analyze(this.htmlEditor.getValue(), this.cssEditor.getValue(), this.rules, this.desctiotion);
-            if (result) {
-                let url = window.location.href;
-                fetch(url, {
-                    method: 'POST',
-                    body: JSON.stringify({'complete': 'complete'}),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                }).then(
-                    response => {
-                        console.log(response.body);
-                        openModal();
-                    }
-                )
-                // openModal();
-            }
-            // TODO css code check!
-
-
+            if (result) openModal();
         }
 
         if (!editor_only) {
@@ -628,8 +610,6 @@ class AcePlayground extends HTMLElement {
     
             htmlEditor.on("input", this.updatePreviewTimeoutUpdate);
             cssEditor.on("input", this.updatePreviewTimeoutUpdate);
-
-
         }
 
         
