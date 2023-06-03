@@ -139,7 +139,7 @@ class mod_htmleditor_mod_form extends moodleform_mod {
                 $mform->addElement(
                     'submit',
                     'setroot-'.$rule_id,
-                    get_string('set_as_root', 'htmleditpr')
+                    get_string('set_as_root', 'htmleditor')
                 );
             }
             $mform->registerNoSubmitButton($root_button_name);
