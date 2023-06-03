@@ -1,7 +1,5 @@
 <?php
 
-use mod_htmleditor\output\standard_action_bar;
-
 require_once("../../config.php");
 require_once($CFG->libdir . '/completionlib.php');
 require_once("$CFG->libdir/rsslib.php");
@@ -42,13 +40,8 @@ echo $OUTPUT->header();
 
 $context = context_module::instance($cm->id);
 
-
 $PAGE->requires->js( new moodle_url( "/mod/htmleditor/local/ace-builds-master/src/ace.js"));
 $PAGE->requires->js( new moodle_url( "/mod/htmleditor/local/AcePlayground.js"));
-
-// echo "<script src='./local/ace-builds-master/src/ace.js'></script>";
-// echo "<script src='./local/AcePlayground.js'></script>";
-
 
 echo "
 <style>
@@ -150,22 +143,9 @@ echo '<div id="myModal" class="modal">
 $rules_json = getRules($htmleditor->id);
 $rules_json = str_replace("'", "&#39", $rules_json);
 $placeholder_replaced = str_replace("'", "&#39", $htmleditor->placeholder);
-//var_dump($rules_json);
-
 
 $PAGE->requires->js_call_amd("init");
 
 echo "<ace-playground html='{$placeholder_replaced}' rules='{$rules_json}'></ace-playground>";
-
-//$completiondetails = \core_completion\cm_completion_details::get_instance($cm, $USER->id);
-//$activitydates = \core\activity_dates::get_dates_for_module($cm, $USER->id); // Fetch activity dates.
-//echo $OUTPUT->activity_information($cm, $completiondetails, $activitydates);
-
-$comp = new completion_info($course);
-if (isset($_POST['complete']) and $_POST['complete'] == 'complete') {
-    $comp->update_state($cm, COMPLETION_INCOMPLETE);
-}
-
-
 
 echo $OUTPUT->footer();
