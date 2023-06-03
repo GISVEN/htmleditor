@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/htmleditor/db" VERSION="20230530" COMMENT="XMLDB file for Moodle mod/htmleditor"
+<XMLDB PATH="mod/htmleditor/db" VERSION="20230603" COMMENT="XMLDB file for Moodle mod/htmleditor"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -10,6 +10,7 @@
         <FIELD NAME="name" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="placeholder" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="исходные данные задания"/>
         <FIELD NAME="rules" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="список правил для выполнения задания"/>
+        <FIELD NAME="completion" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

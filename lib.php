@@ -109,6 +109,34 @@ function htmleditor_supports($features) {
     switch ($features) {
         case FEATURE_PLAGIARISM: return true;
         case FEATURE_MOD_PURPOSE: return MOD_PURPOSE_ASSESSMENT;
+        case FEATURE_COMPLETION_HAS_RULES: return true;
     }
+}
+
+function get_coursemodule_info($coursemodule) {
+    global $DB;
+
+    $dbparams = ['id' => $coursemodule->instance];
+    $fields = 'id, name, placeholder rules completion';
+    if (!$htmleditor = $DB->get_record('forum', $dbparams, $fields)) {
+        return false;
+    }
+
+    $result = new cached_cm_info();
+    $result->name = $htmleditor->name;
+
+    if ($coursemodule->showdescription) {
+        // Convert intro to html. Do not filter cached version, filters run at display time.
+        $result->content = format_module_intro('htmleditor', $htmleditor, $coursemodule->id, false);
+    }
+
+    // Populate the custom completion rules as key => value pairs, but only if the completion mode is 'automatic'.
+    if ($coursemodule->completion == COMPLETION_TRACKING_AUTOMATIC) {
+        $result->customdata['customcompletionrules']['completiondiscussions'] = $htmleditor->completiondiscussions;
+        $result->customdata['customcompletionrules']['completionreplies'] = $htmleditor->completionreplies;
+        $result->customdata['customcompletionrules']['completionposts'] = $htmleditor->completionposts;
+    }
+
+    return $result;
 }
 

@@ -2,7 +2,7 @@
 
 let activity_button;
 let appended = false;
-const DEBUG = true;
+const DEBUG = false;
 
 function dbm(values, type) {
     if (!DEBUG) return;
@@ -593,7 +593,22 @@ class AcePlayground extends HTMLElement {
             this.preview.src = "data:text/html," + encodeURIComponent(code);
 
             let result = analyze(this.htmlEditor.getValue(), this.cssEditor.getValue(), this.rules, this.desctiotion);
-            if (result) openModal();
+            if (result) {
+                let url = window.location.href;
+                fetch(url, {
+                    method: 'POST',
+                    body: JSON.stringify({'complete': 'complete'}),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(
+                    response => {
+                        console.log(response.body);
+                        openModal();
+                    }
+                )
+                // openModal();
+            }
             // TODO css code check!
 
 

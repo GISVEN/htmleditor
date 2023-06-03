@@ -8,6 +8,7 @@ require_once("$CFG->libdir/rsslib.php");
 require_once("./locallib.php");
 
 global $PAGE;
+global $USER;
 
 echo "<style>.notifytiny.debuggingmessage{
 display: none;
@@ -155,6 +156,15 @@ $placeholder_replaced = str_replace("'", "&#39", $htmleditor->placeholder);
 $PAGE->requires->js_call_amd("init");
 
 echo "<ace-playground html='{$placeholder_replaced}' rules='{$rules_json}'></ace-playground>";
+
+//$completiondetails = \core_completion\cm_completion_details::get_instance($cm, $USER->id);
+//$activitydates = \core\activity_dates::get_dates_for_module($cm, $USER->id); // Fetch activity dates.
+//echo $OUTPUT->activity_information($cm, $completiondetails, $activitydates);
+
+$comp = new completion_info($course);
+if (isset($_POST['complete']) and $_POST['complete'] == 'complete') {
+    $comp->update_state($cm, COMPLETION_INCOMPLETE);
+}
 
 
 
