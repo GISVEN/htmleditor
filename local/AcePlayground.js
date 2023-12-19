@@ -417,7 +417,6 @@ function analyze(htmlValue, cssValue, rules_unparsed, description) {
     let description_text = '';
     let all_valid = true;
 
-    // новая обработка
     let prepared_rules = prepareRules(rules);
     dbm([prepared_rules]);
 
@@ -428,15 +427,6 @@ function analyze(htmlValue, cssValue, rules_unparsed, description) {
         all_valid &= is_valid;
         description_text += getDescription(prepared_rule, is_valid);
     })
-
-    // старая обработка
-    // rules.forEach(rule => {
-    //     dbm(['analyze rule', rule]);
-    //     let is_valid = validRule(htmlValue, rule);
-    //     dbm(['rule is valid:', Boolean(is_valid)], 'warn');
-    //     all_valid &= is_valid;
-    //     description_text += getDescription(rule, is_valid)
-    // })
 
     description.src = "data:text/html;charset=UTF-8," + encodeURIComponent(description_text);
     return all_valid;
@@ -452,16 +442,18 @@ class AcePlayground extends HTMLElement {
         super();
 
         let html = this.getAttribute('html');
+        this.removeAttribute('html');
         let css = this.getAttribute('css');
-
-        // если истина, элемент не будет содержать вывод и задания
+        this.removeAttribute('css');
+        
         let editor_only = this.hasAttribute("editor_only");
-        let description_text = this.getAttribute('description');
-        this.rules = this.getAttribute('rules');
 
+        this.rules = this.getAttribute('rules');
+        this.removeAttribute('rules');
 
         let shadow = this.attachShadow({mode: "open"});
         let dom = require("ace/lib/dom");
+
 
         if (editor_only) 
             dom.buildDom(
@@ -589,7 +581,7 @@ class AcePlayground extends HTMLElement {
 
 
         function updateAndCheck() {
-            let code = this.htmlEditor.getValue() + "<style>" + this.cssEditor.getValue() + "</style>";
+            let code = this.htmlEditor.getValue()+"<style>"+this.cssEditor.getValue() + "</style>";
             this.preview.src = "data:text/html," + encodeURIComponent(code);
 
             let result = analyze(this.htmlEditor.getValue(), this.cssEditor.getValue(), this.rules, this.desctiotion);
@@ -612,10 +604,6 @@ class AcePlayground extends HTMLElement {
             cssEditor.on("input", this.updatePreviewTimeoutUpdate);
         }
 
-        
-        // this.updatePreviewTimeoutUpdate(1);
-
-        this.desctiotion.src = "data:text/html," + encodeURIComponent(description_text);
 
         try {
             activity_button = document.querySelector('.btn.btn-outline-secondary.btn-sm.text-nowrap').cloneNode(true);
