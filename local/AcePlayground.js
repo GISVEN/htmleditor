@@ -8,15 +8,15 @@ function dbm(values, type) {
     if (!DEBUG) return;
 
     switch (type) {
-    case 'err':
-        console.error(...values);
-        break;
-    case 'warn':
-        console.warn(...values);
-        break;
-    default:
-        console.log(...values);
-        break;
+        case 'err':
+            console.error(...values);
+            break;
+        case 'warn':
+            console.warn(...values);
+            break;
+        default:
+            console.log(...values);
+            break;
     }
 }
 
@@ -30,13 +30,13 @@ function openModal() {
         appended = true;
     };
 }
-  
+
 function closeModal() {
     document.getElementById("myModal").style.display = "none";
 }
-  
+
 function getDescription(rule_object, is_valid) {
-        
+
     let rule = rule_object.rule.rule;
     let name = rule?.name ?? 'rule name';
     let description = rule?.description ?? 'rule description';
@@ -76,18 +76,18 @@ function unpackFromBody(dom, index = 0) {
 
 function isDomElement(obj) {
     try {
-      //Using W3 DOM2 (works for FF, Opera and Chrome)
-      return obj instanceof HTMLElement;
+        //Using W3 DOM2 (works for FF, Opera and Chrome)
+        return obj instanceof HTMLElement;
     }
-    catch(e){
-      //Browsers not supporting W3 DOM2 don't have HTMLElement and
-      //an exception is thrown and we end up here. Testing some
-      //properties that all elements have (works on IE7)
-      return (typeof obj==="object") &&
-        (obj.nodeType===1) && (typeof obj.style === "object") &&
-        (typeof obj.ownerDocument ==="object");
+    catch (e) {
+        //Browsers not supporting W3 DOM2 don't have HTMLElement and
+        //an exception is thrown and we end up here. Testing some
+        //properties that all elements have (works on IE7)
+        return (typeof obj === "object") &&
+            (obj.nodeType === 1) && (typeof obj.style === "object") &&
+            (typeof obj.ownerDocument === "object");
     }
-  }
+}
 
 function prepareToQuerySelector(rule_dom) {
     if (!isDomElement(rule_dom) && rule_dom.nodeType === null) {
@@ -98,17 +98,17 @@ function prepareToQuerySelector(rule_dom) {
     let attributes = rule_dom.attributes;
     // dbm(['attributes', attributes]);
     result += rule_dom.nodeName;
-    
-   dbm(['node', rule_dom]);
+
+    dbm(['node', rule_dom]);
 
     if (rule_dom.nodeName === '#text') {
         return result += '-' + rule_dom.nodeValue.trim().replace(/\n/g, '');;
     }
 
-    if (attributes == undefined) 
+    if (attributes == undefined)
         return result;
 
-    for (let attribute of attributes) 
+    for (let attribute of attributes)
         result += `[${attribute.name}="${attribute.value}"]`
 
     return result;
@@ -124,7 +124,7 @@ function prepareToCheck(htmlValue, rule_object, from = 'body') {
     let check_from_here;
     let dom_for_from;
     let preparedString;
-    
+
     if (from === 'body') check_from_here = htmlValue_dom.querySelector('body');
     else {
         dom_for_from = parser.parseFromString(from.rule.rule_text, 'text/html');
@@ -136,7 +136,7 @@ function prepareToCheck(htmlValue, rule_object, from = 'body') {
 
         check_from_here = htmlValue_dom.querySelector(preparedString);
         if (check_from_here !== null) check_from_here = unpackFromBody(check_from_here);
-    
+
     }
 
     if (check_from_here == null && from !== 'body') {
@@ -158,9 +158,8 @@ function check(htmlValue, rule_object, check_type, from = 'body') {
 
     let [check_from_here, rule_dom] = prepareToCheck(htmlValue, rule_object, from);
 
-    if (!(valid_check_types.includes(check_type))) 
-    {
-        dbm(['Invalid check type', check_type,' This rule will be skipped!'], 'warn');
+    if (!(valid_check_types.includes(check_type))) {
+        dbm(['Invalid check type', check_type, ' This rule will be skipped!'], 'warn');
         return true;
     }
 
@@ -168,19 +167,19 @@ function check(htmlValue, rule_object, check_type, from = 'body') {
 
     let finded = false;
     check_from_here.childNodes.forEach(child => {
-        dbm(['compare',child,'and',rule_dom], 'warn');
+        dbm(['compare', child, 'and', rule_dom], 'warn');
 
         if (rule_dom.nodeName !== "#text" || child.nodeName !== '#text') {
             dbm([child.isEqualNode(rule_dom) ? 'equale!' : 'fail!'], 'warn');
             finded ||= child.isEqualNode(rule_dom);
         } else {
-                
+
             let rule_text = rule_dom.nodeValue.trim();
             let child_text = child.nodeValue.trim();
             dbm([child_text == rule_text ? 'equale!' : 'fail!'], 'warn');
             finded ||= child_text == rule_text;
         }
-         
+
     });
 
     valid &= check_type === 'exist' ? finded : !finded;
@@ -194,10 +193,10 @@ function check(htmlValue, rule_object, check_type, from = 'body') {
 function isIterable(obj) {
     // checks for null and undefined
     if (obj == null) {
-      return false;
+        return false;
     }
     return typeof obj[Symbol.iterator] === 'function';
-  }
+}
 
 
 // функция по преобразованию строки в dom
@@ -224,7 +223,7 @@ function tryFindParent(htmlValue, parent) {
     parent_dom = unpackFromBody(parent_dom);
     // dbm(['parent dom 1', parent_dom], 'warn');
 
-    if (!parent_dom) {return false};
+    if (!parent_dom) { return false };
 
     let prepared_string = prepareToQuerySelector(parent_dom);
     // dbm(['prepared string', prepared_string], 'warn');
@@ -268,7 +267,7 @@ function tryFindRule(rule_object, parent_dom) {
     let parent_dom_childs = parent_dom.childNodes;
     // dbm(["parent dom childs", parent_dom_childs]);
 
-    let finded= null;
+    let finded = null;
 
     if (isIterable(parent_dom_childs)) {
         parent_dom_childs.forEach(child => {
@@ -278,14 +277,14 @@ function tryFindRule(rule_object, parent_dom) {
             }
             // dbm(['child dom', child_dom], 'warn');
             let child_string = prepareToQuerySelector(child_dom);
-            dbm(['compare strings', rule_dom_string, 'and', child_string , rule_dom_string === child_string], 'warn')
+            dbm(['compare strings', rule_dom_string, 'and', child_string, rule_dom_string === child_string], 'warn')
             let find = rule_dom_string === child_string;
             valid |= check_exist ? find : !find;
             // dbm(['is valid', valid]);
             if (rule_dom_string === child_string) finded = child;
 
         })
-    } 
+    }
     if (parent_dom_childs.length == 0) {
         dbm(['parent childs is empty!']);
         if (!check_exist) valid = true;
@@ -309,7 +308,7 @@ function tryFindRule(rule_object, parent_dom) {
 
 // функция проверяет правило на валидность
 function validRule(htmlValue, rule_object) {
-    
+
     let valid = true;
     let htmlValue_dom = stringToDom(htmlValue);
     let body = htmlValue_dom.querySelector('body');
@@ -322,7 +321,7 @@ function validRule(htmlValue, rule_object) {
     if (rule_object.parent !== null) {
         let parent_dom = tryFindParent(htmlValue, rule_object.parent);
         if (parent_dom === false) return false;
-        
+
         dbm(['parent dom', parent_dom], 'warn');
         dbm(['parent string', prepareToQuerySelector(parent_dom)], 'warn');
 
@@ -346,7 +345,7 @@ function validRule(htmlValue, rule_object) {
     // rule_object.childs.forEach(child => {
     //     if (rule_object.rule.rule_type == 'delete' && child.rule.rule_type == 'exist') valid &= true;
     //     else valid &= validRule(htmlValue, child , rule_object);
-        
+
     // });
     return valid;
 }
@@ -388,10 +387,10 @@ function prepareRule(rule_object, parent = null) {
         let index = rule_object.childs?.indexOf(rule.rule);
         if (index !== -1) rule_object.childs?.splice(index, 1);
     });
-    
+
 
     return prepared_rules;
-}   
+}
 
 // функция для разбивания правил по root атрибуту
 function prepareRules(rules) {
@@ -402,14 +401,14 @@ function prepareRules(rules) {
         prepared_rules.push(...prepareRule(rule_object));
     })
 
-    return prepared_rules;    
+    return prepared_rules;
 }
 
 
 function analyze(htmlValue, cssValue, rules_unparsed, description) {
     let rules = [];
-    
-    try {rules = JSON.parse(rules_unparsed);} 
+
+    try { rules = JSON.parse(rules_unparsed); }
     catch (e) {
         dbm([e, 'rule:', rules_unparsed], 'err');
     }
@@ -445,27 +444,27 @@ class AcePlayground extends HTMLElement {
         this.removeAttribute('html');
         let css = this.getAttribute('css');
         this.removeAttribute('css');
-        
+
         let editor_only = this.hasAttribute("editor_only");
 
         this.rules = this.getAttribute('rules');
         this.removeAttribute('rules');
 
-        let shadow = this.attachShadow({mode: "open"});
+        let shadow = this.attachShadow({ mode: "open" });
         let dom = require("ace/lib/dom");
 
 
-        if (editor_only) 
+        if (editor_only)
             dom.buildDom(
-                ["div", {id: "host"},
-                    ["div", {id: "redactors"},
-                        ["div", {id: "tabs_panel"},
-                            ["button", {id: "html_tab" ,class: "tab_links"}],
-                            ["button", {id: "css_tab", class: "tab_links" }]
+                ["div", { id: "host" },
+                    ["div", { id: "redactors" },
+                        ["div", { id: "tabs_panel" },
+                            ["button", { id: "html_tab", class: "tab_links" }],
+                            ["button", { id: "css_tab", class: "tab_links" }]
                         ],
-                        ["div", {id: "redactor" },
-                            ["div", {id: "html", class: "tab_content"}],
-                            ["div", {id: "css", class: "tab_content" }]
+                        ["div", { id: "redactor" },
+                            ["div", { id: "html", class: "tab_content" }],
+                            ["div", { id: "css", class: "tab_content" }]
                         ],
                     ],
                     ["style", `
@@ -479,27 +478,27 @@ class AcePlayground extends HTMLElement {
                             display: none;
                         }`
                     ]
-                ], 
+                ],
                 shadow
             );
         else {
             dom.buildDom(
-                ["div", {id: "host"},
-                    ["div", {id: "redactors"}, 
-                        ["div", {id: "tabs_panel"}, 
-                            ["button", {id: "html_tab" ,class: "tab_links"}], 
-                            ["button", {id: "css_tab", class: "tab_links" }]
-                        ], 
-                        ["div", {id: "redactor" },
-                            ["div", {id: "html", class: "tab_content"}],
-                            ["div", {id: "css", class: "tab_content" }]
+                ["div", { id: "host" },
+                    ["div", { id: "redactors" },
+                        ["div", { id: "tabs_panel" },
+                            ["button", { id: "html_tab", class: "tab_links" }],
+                            ["button", { id: "css_tab", class: "tab_links" }]
+                        ],
+                        ["div", { id: "redactor" },
+                            ["div", { id: "html", class: "tab_content" }],
+                            ["div", { id: "css", class: "tab_content" }]
                         ],
                     ],
-                    ["div", {id: "info"},
-                        ["iframe", {id: "preview"}],
-                        ["iframe", {id: "description"}]
+                    ["div", { id: "info" },
+                        ["iframe", { id: "preview" }],
+                        ["iframe", { id: "description" }]
                     ],
-                ["style", `
+                    ["style", `
                     #host {
                         height: 150%;
                         display: grid;
@@ -534,12 +533,12 @@ class AcePlayground extends HTMLElement {
                         display: none;
                     }
                 `]
-            ], 
-            shadow
-            ); 
+                ],
+                shadow
+            );
         }
-        
-    
+
+
 
         let tabs = ["html", "css"];
 
@@ -549,7 +548,7 @@ class AcePlayground extends HTMLElement {
 
             tab_button.setAttribute("name", v);
             tab_button.innerHTML = v;
-            tab_button.onclick = (e) => {openTab(e, v, shadow)};
+            tab_button.onclick = (e) => { openTab(e, v, shadow) };
 
         });
 
@@ -581,7 +580,7 @@ class AcePlayground extends HTMLElement {
 
 
         function updateAndCheck() {
-            let code = this.htmlEditor.getValue()+"<style>"+this.cssEditor.getValue() + "</style>";
+            let code = this.htmlEditor.getValue() + "<style>" + this.cssEditor.getValue() + "</style>";
             this.preview.src = "data:text/html," + encodeURIComponent(code);
 
             let result = analyze(this.htmlEditor.getValue(), this.cssEditor.getValue(), this.rules, this.desctiotion);
@@ -590,16 +589,14 @@ class AcePlayground extends HTMLElement {
 
         if (!editor_only) {
             updateAndCheck = updateAndCheck.bind(this);
-            this.updatePreviewTimeoutUpdate = function(time)
-            {
-                if (updatePreviewTimeout !== undefined)
-                {
+            this.updatePreviewTimeoutUpdate = function (time) {
+                if (updatePreviewTimeout !== undefined) {
                     clearTimeout(updatePreviewTimeout);
                     updatePreviewTimeout = undefined;
                 }
                 updatePreviewTimeout = setTimeout(updateAndCheck, time > 0 ? time : 1000);
             }
-    
+
             htmlEditor.on("input", this.updatePreviewTimeoutUpdate);
             cssEditor.on("input", this.updatePreviewTimeoutUpdate);
         }
@@ -612,8 +609,7 @@ class AcePlayground extends HTMLElement {
         }
         document.querySelector('.activity-header').remove();
 
-        function openTab(evt, tabName, shadowRoot)
-        {
+        function openTab(evt, tabName, shadowRoot) {
             let i, tab_content, tab_links;
             tab_content = shadowRoot.querySelectorAll(".tab_content");
             for (i = 0; i < tab_content.length; i++) {
@@ -630,8 +626,8 @@ class AcePlayground extends HTMLElement {
 };
 
 define(
-    "init", 
-    function() {
+    "init",
+    function () {
         customElements.define('ace-playground', AcePlayground);
         // console.log("ace-playground defined!");
     }
